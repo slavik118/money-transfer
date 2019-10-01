@@ -18,7 +18,14 @@ public class JsonBodyFilter implements Filter {
   private static final ImmutableSet<String> HTTP_METHODS_WITH_BODY = ImmutableSet.of("POST", "PUT");
 
   private static void stopRequest(final String message) {
-    halt(HTTP_BAD_REQUEST, new APIResponse(Status.ERROR, message).toJson());
+    halt(HTTP_BAD_REQUEST, 
+    		
+    		APIResponse.builder()
+					.setStatus(Status.ERROR)
+					.setMessage(message)
+					.build()
+    		        .toJson());
+//    halt(HTTP_BAD_REQUEST, new APIResponse(Status.ERROR, message).toJson());
   }
 
   @Override

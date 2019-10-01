@@ -92,9 +92,15 @@ public class AccountController {
 	 * @return A list of {@link Account} of all registered accounts.
 	 */
 	public Route listAccounts() {
-		return (request, response) -> new APIResponse(
-				this.eventStorage.findAll().stream().map(Account::from).collect(toImmutableList()),
-				getLinksForAccounts());
+		return (request, response) -> 		
+		APIResponse.builder()
+		.setStatus(Status.OK)
+		.setMessage("SUCCESS")
+		.setData(this.eventStorage.findAll().stream()
+				.map(Account::from)
+				.collect(toImmutableList()))
+		.setLinks(getLinksForAccounts())
+		.build();
 	}
 
 	/**
@@ -110,17 +116,28 @@ public class AccountController {
 
 			if (!validationErrors.isEmpty()) {
 				response.status(HTTP_BAD_REQUEST);
-				return new APIResponse(Status.ERROR, VALIDATION_ERROR_MESSAGE, validationErrors.asMap());
+				return APIResponse.builder()
+						.setStatus(Status.ERROR)
+						.setMessage(VALIDATION_ERROR_MESSAGE)
+						.setData(validationErrors.asMap())
+						.build();
 			}
 
 			final UUID aggregateID = UUID.fromString(request.params(":id"));
 			// Verifies if requested aggregate exists
 			if (this.eventStorage.exists(aggregateID)) {
-				return new APIResponse(Account.from(this.eventStorage.get(aggregateID)),
-						getLinksForAccount(aggregateID));
+				return APIResponse.builder()
+						.setStatus(Status.OK)
+						.setMessage("SUCCESS")
+						.setData(Account.from(this.eventStorage.get(aggregateID)))
+						.setLinks(getLinksForAccount(aggregateID))
+						.build();
 			} else {
 				response.status(HTTP_NOT_FOUND);
-				return new APIResponse(Status.ERROR, String.format("Account with ID: %s was not found", aggregateID));
+				return APIResponse.builder()
+						.setStatus(Status.ERROR)
+						.setMessage( String.format("Account with ID: %s was not found", aggregateID))
+						.build();
 			}
 		};
 	}
@@ -148,13 +165,22 @@ public class AccountController {
 
 			if (!validationErrors.isEmpty()) {
 				response.status(HTTP_BAD_REQUEST);
-				return new APIResponse(Status.ERROR, VALIDATION_ERROR_MESSAGE, validationErrors.asMap());
+				return APIResponse.builder()
+						.setStatus(Status.ERROR)
+						.setMessage(VALIDATION_ERROR_MESSAGE)
+						.setData(validationErrors.asMap())
+						.build();
 			}
 
 			// Issues CreateAccountCommand
 			final UUID aggregateID = this.accountService.createAccount(payload.getFullName());
 			response.status(HTTP_CREATED);
-			return new APIResponse(Status.OK, "Account will be created", aggregateID, Link.getLinksForAccount(aggregateID));
+			return APIResponse.builder()
+					.setStatus(Status.OK)
+					.setMessage("Account will be created")
+					.setData(aggregateID)
+					.setLinks(Link.getLinksForAccount(aggregateID))
+					.build();
 		};
 	}
 
@@ -197,7 +223,11 @@ public class AccountController {
 
 			if (!validationErrors.isEmpty()) {
 				response.status(HTTP_BAD_REQUEST);
-				return new APIResponse(Status.ERROR, VALIDATION_ERROR_MESSAGE, validationErrors.asMap());
+				return APIResponse.builder()
+						.setStatus(Status.ERROR)
+						.setMessage(VALIDATION_ERROR_MESSAGE)
+						.setData(validationErrors.asMap())
+						.build();
 			}
 
 			// Validates existence
@@ -205,18 +235,28 @@ public class AccountController {
 			final UUID toID = UUID.fromString(payload.getToAccountNumber());
 			if (!this.eventStorage.exists(fromID)) {
 				response.status(HTTP_NOT_FOUND);
-				return new APIResponse(Status.ERROR, String.format("Account with ID: %s doesn't exist", fromID));
+				return APIResponse.builder()
+						.setStatus(Status.ERROR)
+						.setMessage(String.format("Account with ID: %s doesn't exist", fromID))
+						.build();
 			}
 
 			if (!this.eventStorage.exists(toID)) {
 				response.status(HTTP_NOT_FOUND);
-				return new APIResponse(Status.ERROR, String.format("Account with ID: %s doesn't exist", toID));
+				return APIResponse.builder()
+						.setStatus(Status.ERROR)
+						.setMessage(String.format("Account with ID: %s doesn't exist", toID))
+						.build();
 			}
 
 			// Issues money transfer
 			this.accountService.transferMoney(fromID, toID, payload.getValue());
 			response.status(HTTP_OK);
-			return new APIResponse("Money will be transferred", getLinksForAccounts());
+			return APIResponse.builder()
+					.setStatus(Status.OK)
+					.setMessage("Money will be transferred")
+					.setLinks(getLinksForAccounts())
+					.build();
 		});
 	}
 }

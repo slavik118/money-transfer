@@ -27,15 +27,14 @@ import com.al.mt.services.AccountServiceImpl;
 import com.al.mt.utils.JsonUtils;
 import com.google.common.eventbus.EventBus;
 
+import static com.al.mt.utils.Constants.PORT;
+
 /**
  * Runs HTTP server on port 8000;
  *
  * <p>
- * This microservice allows 
- * - to create account
- * - list existing accounts 
- * - get given account
- * - transfer money from one account to another
+ * This microservice allows - to create account - list existing accounts - get
+ * given account - transfer money from one account to another
  */
 public class MainApp {
 	private final static Logger LOG = LoggerFactory.getLogger(MainApp.class);
@@ -46,15 +45,13 @@ public class MainApp {
 	private static final AccountService ACCOUNT_SERVICE = new AccountServiceImpl(EVENT_BUS);
 	private static final AccountController ACCOUNT_CONTROLLER = new AccountController(ACCOUNT_SERVICE,
 			ACCOUNT_EVENT_STORAGE);
-	
-	private static final int PORT = 8000;
 
 	public static void main(String[] args) {
 		port(PORT);
 
 		// Registers event listener to EventBus
 		EVENT_BUS.register(EVENT_MANAGER);
-		
+
 		// Before filter
 		before(new LoggingFilter());
 		before("/api/*", new JsonBodyFilter());
@@ -74,17 +71,25 @@ public class MainApp {
 		});
 
 		// Other handlers
-		notFound((request, response) -> new APIResponse(Status.ERROR, "Requested resource doesn't exist").toJson());
-		internalServerError((request, response) -> new APIResponse(Status.ERROR, "Internal Server Error").toJson());
+		notFound((request, response) -> APIResponse.builder()
+				.setStatus(Status.ERROR)
+				.setMessage("Requested resource doesn't exist")
+				.build()
+				.toJson());
+		internalServerError((request, response) -> APIResponse.builder()
+				.setStatus(Status.ERROR)
+				.setMessage("Internal Server Error")
+				.build()
+				.toJson());
 
 		awaitInitialization();
 		logMessage();
 	}
 
 	private static void logMessage() {
-	    LOG.info("***************************************");
-	    LOG.info("*** Server is running on port: {} ***", PORT);
-	    LOG.info("***************************************");
+		LOG.info("***************************************");
+		LOG.info("*** Server is running on port: {} ***", PORT);
+		LOG.info("***************************************");
 	}
 
 }
