@@ -68,8 +68,10 @@ public class AccountAggregate {
 	 */
 	AccountAggregate apply(final DomainEvent event) {
 		return API.Match(event).of(Case(of(AccountCreatedEvent.class), this::apply),
-				Case(of(MoneyTransferredEvent.class), this::apply), Case(of(AccountDebitedEvent.class), this::apply),
-				Case(of(AccountCreditedEvent.class), this::apply), Case(of(MoneyTransferCancelled.class), this::apply),
+				Case(of(MoneyTransferredEvent.class), this::apply),
+				Case(of(AccountDebitedEvent.class), this::apply),
+				Case(of(AccountCreditedEvent.class), this::apply), 
+				Case(of(MoneyTransferCancelled.class), this::apply),
 				Case(of(MoneyTransferSucceeded.class), this::apply));
 	}
 

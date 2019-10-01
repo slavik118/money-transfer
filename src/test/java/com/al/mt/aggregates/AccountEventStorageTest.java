@@ -6,6 +6,9 @@ import com.al.mt.events.AccountCreatedEvent;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.Test;
 
+import static com.al.mt.utils.Constants.FIRST_ACCOUT_FULL_NAME;
+import static com.al.mt.utils.Constants.SECOND_ACCOUT_FULL_NAME;
+
 import java.util.UUID;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -15,8 +18,8 @@ public class AccountEventStorageTest {
 	@Test
 	public void loadAll() {
 		// given
-		final AccountCreatedEvent event1 = new AccountCreatedEvent(UUID.randomUUID(), "Sam Willis");
-		final AccountCreatedEvent event2 = new AccountCreatedEvent(UUID.randomUUID(), "John Black");
+		final AccountCreatedEvent event1 = new AccountCreatedEvent(UUID.randomUUID(), FIRST_ACCOUT_FULL_NAME);
+		final AccountCreatedEvent event2 = new AccountCreatedEvent(UUID.randomUUID(), SECOND_ACCOUT_FULL_NAME);
 		final AccountEventStorage storage = new AccountEventStorage();
 		storage.save(event1);
 		storage.save(event2);
@@ -31,7 +34,7 @@ public class AccountEventStorageTest {
 	@Test
 	public void loadByIDExistingAggregate() {
 		// given
-		final AccountCreatedEvent event = new AccountCreatedEvent(UUID.randomUUID(), "Sam Willis");
+		final AccountCreatedEvent event = new AccountCreatedEvent(UUID.randomUUID(), FIRST_ACCOUT_FULL_NAME);
 		final AccountEventStorage storage = new AccountEventStorage();
 		storage.save(event);
 
@@ -54,7 +57,7 @@ public class AccountEventStorageTest {
 	@Test
 	public void existsExistingAggregate() {
 		// given
-		final AccountCreatedEvent event = new AccountCreatedEvent(UUID.randomUUID(), "Sam Willis");
+		final AccountCreatedEvent event = new AccountCreatedEvent(UUID.randomUUID(), FIRST_ACCOUT_FULL_NAME);
 		final AccountEventStorage storage = new AccountEventStorage();
 		storage.save(event);
 

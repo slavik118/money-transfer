@@ -7,7 +7,7 @@ public final class JsonUtils {
 	private static final Gson GSON = new Gson();
 
 	private JsonUtils() {
-		// private constructor
+		throw new AssertionError();
 	}
 
 	/**

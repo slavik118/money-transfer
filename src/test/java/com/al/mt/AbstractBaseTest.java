@@ -1,4 +1,5 @@
-package com.al.mt.controllers;
+package com.al.mt;
+
 
 import com.al.mt.MainApp;
 import com.google.gson.Gson;
@@ -14,10 +15,9 @@ import java.io.IOException;
 
 import static com.google.common.truth.Truth.assertThat;
 
-public abstract class AbstractControllerTest {
+public abstract class AbstractBaseTest {
 	protected static final Gson GSON = new Gson();
 	protected static final JsonParser JSON_PARSER = new JsonParser();
-	protected static final String SERVER_URL = "http://localhost:8000";
 	protected static final CloseableHttpClient client = HttpClients.custom().build();
 	
 	private static final Object GUARD = new Object();
@@ -40,7 +40,8 @@ public abstract class AbstractControllerTest {
 	}
 
 	protected static void assertResponses(final String expectedResponse, final String actualResponse) {
-		assertThat(GSON.fromJson(actualResponse, JsonObject.class)).isEqualTo(JSON_PARSER.parse(expectedResponse));
+		assertThat(GSON.fromJson(actualResponse, JsonObject.class)).
+		isEqualTo(JSON_PARSER.parse(expectedResponse));
 	}
 
 	protected static String getFieldFromEvents(final String json, final int index, final String fieldName) {

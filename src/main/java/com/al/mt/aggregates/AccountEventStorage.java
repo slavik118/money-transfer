@@ -39,7 +39,7 @@ public class AccountEventStorage {
 
 	public void save(final DomainEvent domainEvent) {
 		this.events.compute(domainEvent.getAggregateID(),
-				(id, events) -> (events == null) ? ImmutableList.of(domainEvent)
-						: new ImmutableList.Builder<DomainEvent>().addAll(events).add(domainEvent).build());
+				(id, ev) -> (ev == null) ? ImmutableList.of(domainEvent)
+						: new ImmutableList.Builder<DomainEvent>().addAll(ev).add(domainEvent).build());
 	}
 }

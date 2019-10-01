@@ -25,7 +25,6 @@ public class Account {
 	private List<Link> links;
 
 	private Account() {
-		// private constructor
 	}
 
 	public static Builder builder() {
@@ -35,7 +34,6 @@ public class Account {
 	public class Builder {
 
 		private Builder() {
-			// private constructor
 		}
 
 		public final Builder setFullName(final String fullName) {

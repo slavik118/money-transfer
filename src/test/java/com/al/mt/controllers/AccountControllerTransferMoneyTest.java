@@ -1,9 +1,12 @@
 package com.al.mt.controllers;
 
 import static com.al.mt.MainApp.ACCOUNT_EVENT_STORAGE;
+import static com.al.mt.utils.Constants.FIRST_ACCOUT_FULL_NAME;
+import static com.al.mt.utils.Constants.SERVER_URL;
 import static com.al.mt.utils.JsonUtils.toJson;
 import static com.google.common.truth.Truth.assertThat;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.math.BigDecimal;
@@ -16,18 +19,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
+import com.al.mt.AbstractBaseTest;
+import com.al.mt.enums.Status;
 import com.al.mt.model.APIResponse;
 import com.al.mt.model.Link;
 import com.al.mt.requests.CreateAccountRequest;
 import com.al.mt.requests.TransferMoneyRequest;
 import com.google.gson.Gson;
 
-public class AccountControllerTransferMoneyTest extends AbstractControllerTest {
+public class AccountControllerTransferMoneyTest extends AbstractBaseTest {
 	private static final Gson GSON = new Gson();
 
 	private static CloseableHttpResponse createAccount() throws Exception {
-		final HttpPost request = new HttpPost(SERVER_URL + "/api/account");
-		request.setEntity(new StringEntity(toJson(new CreateAccountRequest("Sam Willis"))));
+		final HttpPost request = new HttpPost(String.format("%s/api/account", SERVER_URL));
+		request.setEntity(new StringEntity(toJson(new CreateAccountRequest(FIRST_ACCOUT_FULL_NAME))));
 		return client.execute(request);
 	}
 
@@ -40,17 +45,23 @@ public class AccountControllerTransferMoneyTest extends AbstractControllerTest {
 		// given
 		final String aggregateID1 = extractIDFromResponseAndClose(createAccount());
 		final String aggregateID2 = extractIDFromResponseAndClose(createAccount());
-		final HttpPost request = new HttpPost(SERVER_URL + "/api/account/transferMoney");
-		request.setEntity(
-				new StringEntity(toJson(new TransferMoneyRequest(aggregateID1, aggregateID2, BigDecimal.TEN))));
+		final HttpPost request = new HttpPost(String.format("%s/api/account/transferMoney", SERVER_URL));
+		request.setEntity(new StringEntity(toJson(TransferMoneyRequest.builder()
+				.setFomAccountNumber(aggregateID1)
+				.setToAccountNumber(aggregateID2)
+				.setValue(BigDecimal.TEN)
+				.build())));
 
 		// when
 		final CloseableHttpResponse response = client.execute(request);
 
 		// assert
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_OK);
-		final String expectedResponse = new JSONObject().put("status", "OK").put("message", "Money will be transferred")
-				.put("links", Link.getLinksForAccounts()).toString();
+		final String expectedResponse = new JSONObject()
+				.put("status", Status.OK)
+				.put("message", "Money will be transferred")
+				.put("links", Link.getLinksForAccounts())
+				.toString();
 		assertResponses(expectedResponse, getResponseBodyAndClose(response));
 		assertThat(ACCOUNT_EVENT_STORAGE.get(UUID.fromString(aggregateID1)).getBalance()
 				.compareTo(BigDecimal.valueOf(990))).isEqualTo(0);
@@ -63,16 +74,20 @@ public class AccountControllerTransferMoneyTest extends AbstractControllerTest {
 		// given
 		final String aggregateID1 = extractIDFromResponseAndClose(createAccount());
 		final String aggregateID2 = extractIDFromResponseAndClose(createAccount());
-		final HttpPost request = new HttpPost(SERVER_URL + "/api/account/transferMoney");
+		final HttpPost request = new HttpPost(String.format("%s/api/account/transferMoney", SERVER_URL));
 		request.setEntity(new StringEntity(
-				toJson(new TransferMoneyRequest(aggregateID1, aggregateID2, BigDecimal.valueOf(-10)))));
+				toJson(TransferMoneyRequest.builder()
+	                    .setFomAccountNumber(aggregateID1)
+	                    .setToAccountNumber(aggregateID2)
+	                    .setValue(BigDecimal.valueOf(-10))
+	                    .build())));
 
 		// when
 		final CloseableHttpResponse response = client.execute(request);
 
 		// assert
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_BAD_REQUEST);
-		final String expectedResponse = new JSONObject().put("status", "ERROR")
+		final String expectedResponse = new JSONObject().put("status", Status.ERROR)
 				.put("message", "There are validation errors")
 				.put("data",
 						new JSONObject().put("value", new JSONArray().put("Must be provided & " + "be greater than 0")))
@@ -83,15 +98,15 @@ public class AccountControllerTransferMoneyTest extends AbstractControllerTest {
 	@Test
 	public void transferMoneyNotValidNoBody() throws Exception {
 		// given
-		final HttpPost request = new HttpPost(SERVER_URL + "/api/account/transferMoney");
-		request.setEntity(new StringEntity(toJson(new TransferMoneyRequest())));
+		final HttpPost request = new HttpPost(String.format("%s/api/account/transferMoney", SERVER_URL));
+		request.setEntity(new StringEntity(toJson(TransferMoneyRequest.builder().build())));
 
 		// when
 		final CloseableHttpResponse response = client.execute(request);
 
 		// assert
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_BAD_REQUEST);
-		final String expectedResponse = new JSONObject().put("status", "ERROR")
+		final String expectedResponse = new JSONObject().put("status", Status.ERROR)
 				.put("message", "There are validation errors")
 				.put("data",
 						new JSONObject().put("fromAccountNumber", new JSONArray().put("Is not a valid ID value"))
@@ -105,15 +120,19 @@ public class AccountControllerTransferMoneyTest extends AbstractControllerTest {
 	public void transferMoneyNotValidSameAccountNumbers() throws Exception {
 		// given
 		final String aggregateID = extractIDFromResponseAndClose(createAccount());
-		final HttpPost request = new HttpPost(SERVER_URL + "/api/account/transferMoney");
-		request.setEntity(new StringEntity(toJson(new TransferMoneyRequest(aggregateID, aggregateID, BigDecimal.TEN))));
+		final HttpPost request = new HttpPost(String.format("%s/api/account/transferMoney", SERVER_URL));
+		request.setEntity(new StringEntity(toJson(TransferMoneyRequest.builder()
+                .setFomAccountNumber(aggregateID)
+                .setToAccountNumber(aggregateID)
+                .setValue(BigDecimal.TEN)
+                .build())));
 
 		// when
 		final CloseableHttpResponse response = client.execute(request);
 
 		// assert
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_BAD_REQUEST);
-		final String expectedResponse = new JSONObject().put("status", "ERROR")
+		final String expectedResponse = new JSONObject().put("status", Status.ERROR)
 				.put("message", "There are validation errors")
 				.put("data",
 						new JSONObject().put("toAccountNumber",
@@ -125,19 +144,81 @@ public class AccountControllerTransferMoneyTest extends AbstractControllerTest {
 	@Test
 	public void transferMoneyNotValidAccountNumbersAreNulls() throws Exception {
 		// given
-		final HttpPost request = new HttpPost(SERVER_URL + "/api/account/transferMoney");
-		request.setEntity(new StringEntity(toJson(new TransferMoneyRequest(null, null, BigDecimal.TEN))));
+		final HttpPost request = new HttpPost(String.format("%s/api/account/transferMoney", SERVER_URL));
+		request.setEntity(new StringEntity(toJson(
+				TransferMoneyRequest.builder()
+                .setFomAccountNumber(null)
+                .setToAccountNumber(null)
+                .setValue(BigDecimal.TEN)
+                .build())));
 
 		// when
 		final CloseableHttpResponse response = client.execute(request);
 
 		// assert
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_BAD_REQUEST);
-		final String expectedResponse = new JSONObject().put("status", "ERROR")
+		final String expectedResponse = new JSONObject()
+				.put("status", Status.ERROR)
 				.put("message", "There are validation errors")
-				.put("data", new JSONObject().put("fromAccountNumber", new JSONArray().put("Is not a valid ID value"))
+				.put("data", new JSONObject().put("fromAccountNumber", 
+						new JSONArray().put("Is not a valid ID value"))
 						.put("toAccountNumber", new JSONArray().put("Is not a valid ID value")))
 				.toString();
 		assertResponses(expectedResponse, getResponseBodyAndClose(response));
 	}
+
+	@Test
+	public void transferMoneyNotValidNotExistingFromAccount() throws Exception {
+	    // given
+	    final String randomID = UUID.randomUUID().toString();
+	    final String aggregateID = extractIDFromResponseAndClose(createAccount());
+	    final HttpPost request = new HttpPost(String.format("%s/api/account/transferMoney", SERVER_URL));
+	    request.setEntity(
+	        new StringEntity(
+	            toJson(TransferMoneyRequest.builder()
+	                    .setFomAccountNumber(randomID)
+	                    .setToAccountNumber(aggregateID)
+	                    .setValue(BigDecimal.TEN)
+	                    .build())));
+
+	    // when
+	    final CloseableHttpResponse response = client.execute(request);
+
+	    // assert
+	    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_NOT_FOUND);
+	    final String expectedResponse =
+	        new JSONObject()
+	            .put("status", Status.ERROR)
+	            .put("message", String.format("Account with ID: %s doesn't exist", randomID))
+	            .toString();
+	    assertResponses(expectedResponse, getResponseBodyAndClose(response));
+	  }
+
+	@Test
+	public void transferMoneyNotValidNotExistingToAccount() throws Exception {
+	    // given
+	    final String randomID = UUID.randomUUID().toString();
+	    final String aggregateID = extractIDFromResponseAndClose(createAccount());
+	    final HttpPost request = new HttpPost(String.format("%s/api/account/transferMoney", SERVER_URL));
+	    request.setEntity(
+	        new StringEntity(
+	            toJson(TransferMoneyRequest.builder()
+	                    .setFomAccountNumber(aggregateID)
+	                    .setToAccountNumber(randomID)
+	                    .setValue(BigDecimal.TEN)
+	                    .build())));
+
+	    // when
+	    final CloseableHttpResponse response = client.execute(request);
+
+	    // assert
+	    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_NOT_FOUND);
+	    final String expectedResponse =
+	        new JSONObject()
+	            .put("status", Status.ERROR)
+	            .put("message", String.format("Account with ID: %s doesn't exist", randomID))
+	            .toString();
+	    assertResponses(expectedResponse, getResponseBodyAndClose(response));
+	  }
+
 }

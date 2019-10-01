@@ -19,7 +19,6 @@ public class MoneyTransaction {
 	private Date lastUpdatedAt;
 
 	private MoneyTransaction() {
-		// private constructr
 	}
 
 	public final UUID getTransactionID() {
@@ -162,7 +161,6 @@ public class MoneyTransaction {
 	public class Builder {
 
 		private Builder() {
-			// private constructor
 		}
 
 		public final Builder setTransactionID(final UUID transactionID) {

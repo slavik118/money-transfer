@@ -15,6 +15,7 @@ import com.al.mt.aggregates.AccountEventStorage;
 import com.al.mt.enums.Status;
 import com.al.mt.model.APIResponse;
 import com.al.mt.model.Account;
+import com.al.mt.model.Link;
 import com.al.mt.requests.CreateAccountRequest;
 import com.al.mt.requests.TransferMoneyRequest;
 import com.al.mt.services.AccountService;
@@ -153,7 +154,7 @@ public class AccountController {
 			// Issues CreateAccountCommand
 			final UUID aggregateID = this.accountService.createAccount(payload.getFullName());
 			response.status(HTTP_CREATED);
-			return new APIResponse(Status.OK, "Account will be created", aggregateID, getLinksForAccount(aggregateID));
+			return new APIResponse(Status.OK, "Account will be created", aggregateID, Link.getLinksForAccount(aggregateID));
 		};
 	}
 
@@ -167,8 +168,8 @@ public class AccountController {
 	 * {@link TransferMoneyRequest} is used as a request DTO with these fields:
 	 *
 	 * <ul>
-	 * <li>{@code fromAccountNumber} - Valid UUID of issuer aggregate
-	 * <li>{@code toAccountNumber} - Valid UUID of receiver aggregate
+	 * <li>{@code fromAccountNumber} - Valid ID of issuer aggregate
+	 * <li>{@code toAccountNumber} - Valid ID of receiver aggregate
 	 * <li>{@code value} - Valid, positive double which represent amount of money to
 	 * transfer.
 	 * </ul>
@@ -204,12 +205,12 @@ public class AccountController {
 			final UUID toID = UUID.fromString(payload.getToAccountNumber());
 			if (!this.eventStorage.exists(fromID)) {
 				response.status(HTTP_NOT_FOUND);
-				return new APIResponse(Status.ERROR, String.format("Account with UUID: %s doesn't exist", fromID));
+				return new APIResponse(Status.ERROR, String.format("Account with ID: %s doesn't exist", fromID));
 			}
 
 			if (!this.eventStorage.exists(toID)) {
 				response.status(HTTP_NOT_FOUND);
-				return new APIResponse(Status.ERROR, String.format("Account with UUID: %s doesn't exist", toID));
+				return new APIResponse(Status.ERROR, String.format("Account with ID: %s doesn't exist", toID));
 			}
 
 			// Issues money transfer

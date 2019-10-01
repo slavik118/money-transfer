@@ -32,11 +32,12 @@
 		<truth.version>0.42</truth.version>
 		<httpclient.version>4.5.6</httpclient.version>
 		<maven.eclipse.version>2.9</maven.eclipse.version>
-		<maven.compiler.version>3.6.0</maven.compiler.version>
+		<maven.compiler.version>3.7.0</maven.compiler.version>
 		<maven-assembly.version>2.4.1</maven-assembly.version>
 	</properties>
 
 	<dependencies>
+		<!-- Spark dependencies (the core) -->
 		<dependency>
 			<groupId>com.sparkjava</groupId>
 			<artifactId>spark-core</artifactId>
@@ -58,16 +59,17 @@
 			<artifactId>guava</artifactId>
 			<version>${guava.version}</version>
 		</dependency>
+		<!-- Gson dependencies (for serialiazing and deserializing Pojo) -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 			<version>${gson.version}</version>
 		</dependency>
 		<dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>${json.version}</version>
-        </dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>${json.version}</version>
+		</dependency>
 
 		<!-- Testing -->
 		<dependency>
@@ -94,12 +96,12 @@
 			<version>${truth.version}</version>
 			<scope>test</scope>
 		</dependency>
-		 <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpclient.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

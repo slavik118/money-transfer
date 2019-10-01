@@ -12,7 +12,6 @@ public class AccountDebitedEvent extends DomainEvent {
 	private BigDecimal value;
 
 	private AccountDebitedEvent() {
-		// private constructr
 	}
 
 	public AccountDebitedEvent(final UUID aggregateID, final UUID fromID, final UUID toID, final UUID transactionID,
@@ -65,7 +64,6 @@ public class AccountDebitedEvent extends DomainEvent {
 	public class Builder {
 
 		private Builder() {
-			// private constructor
 		}
 
 		public final Builder setTransactionID(final UUID transactionID) {

@@ -1,7 +1,14 @@
 package com.al.mt.aggregates;
 
-import com.al.mt.aggregates.AccountAggregate;
-import com.al.mt.aggregates.AccountEventStorage;
+import static com.al.mt.utils.Constants.FIRST_ACCOUT_FULL_NAME;
+import static com.google.common.truth.Truth.assertThat;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.UUID;
+
+import org.junit.jupiter.api.Test;
+
 import com.al.mt.enums.Reason;
 import com.al.mt.enums.State;
 import com.al.mt.enums.Type;
@@ -15,20 +22,13 @@ import com.al.mt.events.MoneyTransferredEvent;
 import com.al.mt.model.MoneyTransaction;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.UUID;
-
-import static com.google.common.truth.Truth.assertThat;
 
 public class AccountAggregateTest {
-	private static final UUID FROM_UUID = UUID.randomUUID();
-	private static final UUID TO_UUID = UUID.randomUUID();
-	private static final AccountCreatedEvent ACCOUNT_CREATED = new AccountCreatedEvent(UUID.randomUUID(), "Tony Stark");
-	private static final MoneyTransferredEvent ISSUER_MONEY_TRANSFERRED = new MoneyTransferredEvent(FROM_UUID,
-			FROM_UUID, TO_UUID, UUID.randomUUID(), BigDecimal.TEN);
+	private static final UUID FROM_ID = UUID.randomUUID();
+	private static final UUID TO_ID = UUID.randomUUID();
+	private static final AccountCreatedEvent ACCOUNT_CREATED = new AccountCreatedEvent(UUID.randomUUID(), FIRST_ACCOUT_FULL_NAME);
+	private static final MoneyTransferredEvent ISSUER_MONEY_TRANSFERRED = new MoneyTransferredEvent(FROM_ID,
+			FROM_ID, TO_ID, UUID.randomUUID(), BigDecimal.TEN);
 	private static final MoneyTransferredEvent RECEIVER_MONEY_TRANSFERRED = new MoneyTransferredEvent(
 			ISSUER_MONEY_TRANSFERRED.getToID(), ISSUER_MONEY_TRANSFERRED.getFromID(),
 			ISSUER_MONEY_TRANSFERRED.getToID(), ISSUER_MONEY_TRANSFERRED.getTransactionID(),

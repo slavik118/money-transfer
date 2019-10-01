@@ -1,5 +1,7 @@
 package com.al.mt.controllers;
 
+import static com.al.mt.utils.Constants.FIRST_ACCOUT_FULL_NAME;
+import static com.al.mt.utils.Constants.SERVER_URL;
 import static com.al.mt.utils.JsonUtils.toJson;
 import static com.google.common.truth.Truth.assertThat;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
@@ -16,17 +18,19 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
+import com.al.mt.AbstractBaseTest;
+import com.al.mt.enums.Status;
 import com.al.mt.model.APIResponse;
 import com.al.mt.model.Link;
 import com.al.mt.requests.CreateAccountRequest;
 import com.google.gson.Gson;
 
-public class AccountControllerGetAccountTest extends AbstractControllerTest {
+public class AccountControllerGetAccountTest extends AbstractBaseTest {
   private static final Gson GSON = new Gson();
 
   private static CloseableHttpResponse createAccount() throws Exception {
-    final HttpPost request = new HttpPost(SERVER_URL + "/api/account");
-    request.setEntity(new StringEntity(toJson(new CreateAccountRequest("Sam Willis"))));
+    final HttpPost request = new HttpPost(String.format("%s/api/account", SERVER_URL));
+    request.setEntity(new StringEntity(toJson(new CreateAccountRequest(FIRST_ACCOUT_FULL_NAME))));
     return client.execute(request);
   }
 
@@ -39,7 +43,7 @@ public class AccountControllerGetAccountTest extends AbstractControllerTest {
   public void getAccountValid() throws Exception {
     // given
     final String aggregateID = extractIDFromResponseAndClose(createAccount());
-    final HttpGet request = new HttpGet(SERVER_URL + "/api/account/" + aggregateID);
+    final HttpGet request = new HttpGet(String.format("%s/api/account/%s", SERVER_URL, aggregateID));
 
     // when
     final CloseableHttpResponse response = client.execute(request);
@@ -50,14 +54,14 @@ public class AccountControllerGetAccountTest extends AbstractControllerTest {
     final String createdAt = getFieldFromEvents(responseJson, 0, "createdAt");
     final String expectedResponse =
         new JSONObject()
-            .put("status", "OK")
+            .put("status", Status.OK)
             .put("message", "SUCCESS")
             .put("links", Link.getLinksForAccount(aggregateID))
             .put(
                 "data",
                 new JSONObject()
                     .put("links", Link.getLinksForAccount(aggregateID))
-                    .put("fullName", "Sam Willis")
+                    .put("fullName", FIRST_ACCOUT_FULL_NAME)
                     .put("accountNumber", aggregateID)
                     .put("balance", 1000.0)
                     .put("transactionToReservedBalance", new JSONObject())
@@ -66,7 +70,7 @@ public class AccountControllerGetAccountTest extends AbstractControllerTest {
                         new JSONArray()
                             .put(
                                 new JSONObject()
-                                    .put("fullName", "Sam Willis")
+                                    .put("fullName", FIRST_ACCOUT_FULL_NAME)
                                     .put("eventType", "ACCOUNT_CREATED_EVENT")
                                     .put("aggregateID", aggregateID)
                                     .put("createdAt", createdAt)))
@@ -81,7 +85,7 @@ public class AccountControllerGetAccountTest extends AbstractControllerTest {
   @Test
   public void getAccountNotValidInvalidID() throws Exception {
     // given
-    final HttpGet request = new HttpGet(SERVER_URL + "/api/account/asd");
+    final HttpGet request = new HttpGet(String.format("%s/api/account/asd", SERVER_URL));
 
     // when
     final CloseableHttpResponse response = client.execute(request);
@@ -90,11 +94,12 @@ public class AccountControllerGetAccountTest extends AbstractControllerTest {
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_BAD_REQUEST);
     final String expectedResponse =
         new JSONObject()
-            .put("status", "ERROR")
+            .put("status", Status.ERROR)
             .put("message", "There are validation errors")
             .put(
                 "data",
-                new JSONObject().put("id", new JSONArray().put("Is not a valid ID value")))
+                new JSONObject()
+                .put("id", new JSONArray().put("Is not a valid ID value")))
             .toString();
     assertResponses(expectedResponse, getResponseBodyAndClose(response));
   }
@@ -103,7 +108,7 @@ public class AccountControllerGetAccountTest extends AbstractControllerTest {
   public void getAccountNotValidAggregateDoesNotExist() throws Exception {
     // given
     final UUID aggregateID = UUID.randomUUID();
-    final HttpGet request = new HttpGet(SERVER_URL + "/api/account/" + aggregateID.toString());
+    final HttpGet request = new HttpGet(String.format("%s/api/account/%s", SERVER_URL, aggregateID.toString()));
 
     // when
     final CloseableHttpResponse response = client.execute(request);
@@ -112,7 +117,7 @@ public class AccountControllerGetAccountTest extends AbstractControllerTest {
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(HTTP_NOT_FOUND);
     final String expectedResponse =
         new JSONObject()
-            .put("status", "ERROR")
+            .put("status", Status.ERROR)
             .put(
                 "message",
                 String.format("Account with ID: %s was not found", aggregateID.toString()))

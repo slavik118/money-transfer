@@ -7,13 +7,7 @@ public class TransferMoneyRequest {
 	private String toAccountNumber;
 	private BigDecimal value;
 
-	public TransferMoneyRequest() {
-	}
-
-	public TransferMoneyRequest(final String fromAccountNumber, final String toAccountNumber, final BigDecimal value) {
-		this.fromAccountNumber = fromAccountNumber;
-		this.toAccountNumber = toAccountNumber;
-		this.value = value;
+	private TransferMoneyRequest() {
 	}
 
 	public final String getFromAccountNumber() {
@@ -38,6 +32,38 @@ public class TransferMoneyRequest {
 
 	public final void setValue(final BigDecimal value) {
 		this.value = value;
+	}
+
+	public static Builder builder() {
+		return new TransferMoneyRequest().new Builder();
+	}
+
+	public class Builder {
+
+		private Builder() {
+		}
+
+		public final Builder setFomAccountNumber(final String fromAccountNumber) {
+			TransferMoneyRequest.this.fromAccountNumber = fromAccountNumber;
+
+			return this;
+		}
+
+		public final Builder setToAccountNumber(final String toAccountNumber) {
+			TransferMoneyRequest.this.toAccountNumber = toAccountNumber;
+
+			return this;
+		}
+
+		public final Builder setValue(final BigDecimal value) {
+			TransferMoneyRequest.this.value = value;
+
+			return this;
+		}
+
+		public TransferMoneyRequest build() {
+			return TransferMoneyRequest.this;
+		}
 	}
 
 }
