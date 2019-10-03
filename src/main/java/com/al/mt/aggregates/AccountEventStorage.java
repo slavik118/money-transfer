@@ -2,14 +2,14 @@ package com.al.mt.aggregates;
 
 import static io.vavr.collection.List.ofAll;
 
-import com.google.common.collect.ImmutableList;
-import com.al.mt.events.DomainEvent;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.al.mt.events.DomainEvent;
+import com.google.common.collect.ImmutableList;
 
 /**
  * In-memory storage for events that make {@link AccountAggregate}.

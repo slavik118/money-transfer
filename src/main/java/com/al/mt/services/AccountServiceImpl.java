@@ -11,6 +11,9 @@ import com.al.mt.events.MoneyTransferCancelled;
 import com.al.mt.events.MoneyTransferredEvent;
 import com.google.common.eventbus.EventBus;
 
+/**
+ * Handles all account related requests.
+ */
 public class AccountServiceImpl implements AccountService {
 
 	private final EventBus eventBus;
@@ -47,4 +50,6 @@ public class AccountServiceImpl implements AccountService {
 			final BigDecimal value, final Reason reason) {
 		this.eventBus.post(new MoneyTransferCancelled(aggregateID, fromID, toID, transactionID, value, reason));
 	}
+	
+	
 }

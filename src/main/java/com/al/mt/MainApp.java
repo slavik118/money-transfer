@@ -1,5 +1,6 @@
 package com.al.mt;
 
+import static com.al.mt.utils.Constants.PORT;
 import static spark.Spark.afterAfter;
 import static spark.Spark.awaitInitialization;
 import static spark.Spark.before;
@@ -27,8 +28,6 @@ import com.al.mt.services.AccountServiceImpl;
 import com.al.mt.utils.JsonUtils;
 import com.google.common.eventbus.EventBus;
 
-import static com.al.mt.utils.Constants.PORT;
-
 /**
  * Runs HTTP server on port 8000;
  *
@@ -42,23 +41,19 @@ public class MainApp {
 	private static final EventBus EVENT_BUS = new EventBus();
 	public static final AccountEventStorage ACCOUNT_EVENT_STORAGE = new AccountEventStorage();
 	private static final EventManager EVENT_MANAGER = new EventManager(EVENT_BUS, ACCOUNT_EVENT_STORAGE);
+
 	private static final AccountService ACCOUNT_SERVICE = new AccountServiceImpl(EVENT_BUS);
 	private static final AccountController ACCOUNT_CONTROLLER = new AccountController(ACCOUNT_SERVICE,
 			ACCOUNT_EVENT_STORAGE);
 
-	public static void main(String[] args) {
+	public static void main(final String... args) {
 		port(PORT);
 
-		// Registers event listener to EventBus
 		EVENT_BUS.register(EVENT_MANAGER);
 
-		// Before filter
+		// Before filters
 		before(new LoggingFilter());
 		before("/api/*", new JsonBodyFilter());
-
-		// After filters
-		afterAfter(new JsonContentTypeFilter());
-		afterAfter(new CORSFilter());
 
 		// Controllers
 		path("", () -> {
@@ -70,17 +65,15 @@ public class MainApp {
 			}));
 		});
 
+		// After filters
+		afterAfter(new JsonContentTypeFilter());
+		afterAfter(new CORSFilter());
+
 		// Other handlers
-		notFound((request, response) -> APIResponse.builder()
-				.setStatus(Status.ERROR)
-				.setMessage("Requested resource doesn't exist")
-				.build()
-				.toJson());
-		internalServerError((request, response) -> APIResponse.builder()
-				.setStatus(Status.ERROR)
-				.setMessage("Internal Server Error")
-				.build()
-				.toJson());
+		notFound((request, response) -> APIResponse.builder().setStatus(Status.ERROR)
+				.setMessage("Requested resource doesn't exist").build().toJson());
+		internalServerError((request, response) -> APIResponse.builder().setStatus(Status.ERROR)
+				.setMessage("Internal Server Error").build().toJson());
 
 		awaitInitialization();
 		logMessage();
