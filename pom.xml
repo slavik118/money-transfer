@@ -30,7 +30,7 @@
 		<junit-jupiter-api.version>5.3.2</junit-jupiter-api.version>
 		<junit-jupiter-engine.version>5.3.2</junit-jupiter-engine.version>
 		<truth.version>0.42</truth.version>
-		<httpclient.version>4.5.6</httpclient.version>
+		<httpclient.version>4.5.13</httpclient.version>
 		<maven.eclipse.version>2.9</maven.eclipse.version>
 		<maven.compiler.version>3.7.0</maven.compiler.version>
 		<maven-assembly.version>2.4.1</maven-assembly.version>
